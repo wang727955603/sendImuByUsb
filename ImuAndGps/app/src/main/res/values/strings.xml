@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">ImuAndGps</string>
+
+    <!--dialog options-->
+    <string name="title_dialog">Tips</string>
+    <string name="message_permission_failed">You refused to apply for our permission, really can not play a happy!</string>
+    <string name="message_permission_rationale">You have denied permission to locate, no permission to locate you can not recommend nearby sister, you look at the office.</string>
+
+    <string name="btn_dialog_yes_permission">OK</string>
+    <string name="btn_dialog_no_permission">NO</string>
+</resources>
