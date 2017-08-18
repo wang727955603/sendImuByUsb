@@ -1,4 +1,4 @@
-package com.cloudminds.imuandgps;
+package com.wm.imuandgps;
 
 import android.Manifest;
 import android.content.Context;
