@@ -6,10 +6,12 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.yanzhenjie.alertdialog.AlertDialog;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.PermissionListener;
@@ -19,8 +21,12 @@ import com.yanzhenjie.permission.RationaleListener;
 import java.util.List;
 
 import presenter.TransferData;
+import presenter.viewImpl;
+import sensor.data.GpsData;
+import sensor.data.ImuData;
+import sensor.data.MessageToPC;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements viewImpl {
     private static final String TAG = "MainActivity";
 
     private final int REQUEST_CODE_SETTING=1001;
@@ -32,7 +38,12 @@ public class MainActivity extends AppCompatActivity {
     private boolean flag_btn=false;
     private Context context;
 
-    TextView textView;
+    private TextView tv_state;
+    private TextView tv_latitude;
+    private TextView tv_longitude;
+    private TextView tv_acc;
+    private TextView tv_gyro;
+    private TextView tv_mag;
 
     private TransferData transferData;
 
@@ -41,22 +52,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context=this;
-        final Button btn_sendImu=(Button) findViewById(R.id.btn_getImu);
-        textView=(TextView)findViewById(R.id.tv);
-        btn_sendImu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!flag_btn){
-                    btn_sendImu.setText("停止");
-                    startSend();
-                    flag_btn=true;
-                }else{
-                    btn_sendImu.setText("发送");
-                    stopSend();
-                    flag_btn=false;
-                }
-            }
-        });
+        initUI();
 
 
         if (AndPermission.hasPermission(context, permissions)) {
@@ -72,9 +68,37 @@ public class MainActivity extends AppCompatActivity {
                     .rationale(rationaleListener)
                     .start();
     }
+    private void initUI(){
+        tv_state=(TextView)findViewById(R.id.tv_state);
+        tv_acc=(TextView)findViewById(R.id.tv_acc);
+        tv_gyro=(TextView)findViewById(R.id.tv_gyro);
+        tv_mag=(TextView)findViewById(R.id.tv_mag);
+
+        tv_latitude=(TextView)findViewById(R.id.tv_latitude);
+        tv_longitude=(TextView)findViewById(R.id.tv_longitude);
+
+        final Button btn_sendImu=(Button) findViewById(R.id.btn_getImu);
+        btn_sendImu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!flag_btn){
+                    btn_sendImu.setText("停止发送");
+                    tv_state.setVisibility(View.VISIBLE);
+                    tv_state.setText("等待客户端连接");
+                    startSend();
+                    flag_btn=true;
+                }else{
+                    btn_sendImu.setText("开始发送");
+                    tv_state.setVisibility(View.GONE);
+                    stopSend();
+                    flag_btn=false;
+                }
+            }
+        });
+    }
 
     private void startSend(){
-        transferData=new TransferData(context,textView);
+        transferData=new TransferData(context,this);
         transferData.start();
     }
     private  void stopSend(){
@@ -82,6 +106,32 @@ public class MainActivity extends AppCompatActivity {
             transferData.stop();
     }
 
+    @Override
+    public void showMessage(String messageToPC) {
+        if(!TextUtils.isEmpty(messageToPC)){
+            Gson gson=new Gson();
+            MessageToPC msg= gson.fromJson(messageToPC,MessageToPC.class);
+            GpsData gpsData=msg.getGps();
+            ImuData acc=msg.getAcc();
+            ImuData gyr=msg.getGyr();
+            ImuData mag=msg.getMag();
+            if(gpsData!=null) {
+                tv_latitude.setText( "latitude  : " + gpsData.getLatitude());
+                tv_longitude.setText("longitude : " +gpsData.getLongitude());
+            }
+            tv_acc.setText(          "acc       :\n "+acc.getX()+", "+acc.getY()+", "+acc.getZ());
+            tv_gyro.setText(         "gyr       :\n "+gyr.getX()+", "+gyr.getY()+", "+gyr.getZ());
+            tv_mag.setText(          "mag       :\n "+mag.getX()+", "+mag.getY()+", "+mag.getZ());
+
+        }
+
+    }
+
+    @Override
+    public void showState(String state) {
+        if(!TextUtils.isEmpty(state))
+            tv_state.setText(state);
+    }
 
     @Override
     protected void onPause() {

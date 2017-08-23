@@ -15,9 +15,9 @@ public class client {
 		
 		//window 环境运行adb指令，需要配置adb系统环境变量
 		Runtime.getRuntime().exec("cmd /c adb shell am broadcast -a NotifyServiceStop");
-		Thread.sleep(3000);
+		Thread.sleep(1000);
 		Runtime.getRuntime().exec("cmd /c adb forward tcp:8000 tcp:2009");
-		Thread.sleep(3000);
+		Thread.sleep(1000);
 		Runtime.getRuntime().exec("cmd /c adb shell am broadcast -a NotifyServiceStart");
 
 		System.out.println("请输入命令：");

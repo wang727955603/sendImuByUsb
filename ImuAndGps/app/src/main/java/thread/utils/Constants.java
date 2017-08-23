@@ -8,4 +8,6 @@ public class Constants {
     public static final int SOCKET_PORT = 18887 ;
 
     public static int SOCKET_STATUS=0;
+
+    public static final int INTERVAL_SEND_TO_SERVER=50;
 }

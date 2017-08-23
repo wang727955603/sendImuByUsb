@@ -5,12 +5,22 @@ package sensor.data;
  */
 
 public class GpsData {
+    long timestamp;
     double latitude;
     double longitude;
 
-    public GpsData(double latitude, double longitude) {
+    public GpsData(long timestamp,double latitude, double longitude) {
+        this.timestamp=timestamp;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public double getLatitude() {
@@ -32,6 +42,7 @@ public class GpsData {
     @Override
     public String toString() {
         return "GpsData{" +
+                "timestamp="+timestamp+
                 "latitude=" + latitude +
                 ", longitude=" + longitude +
                 '}';

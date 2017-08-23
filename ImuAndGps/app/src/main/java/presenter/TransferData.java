@@ -4,8 +4,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.google.gson.Gson;
 
@@ -36,7 +36,7 @@ public class TransferData {
 
     private boolean isEnqueue = false;
 
-    private TextView textView;
+    private viewImpl view;
 
     private int count = 0;
 
@@ -47,6 +47,7 @@ public class TransferData {
             switch (msg.what) {
                 case 1001:
                     isEnqueue = false;
+                    view.showState("客户端断开连接");
                     break;
                 case 1002:
                     isEnqueue = true;
@@ -55,19 +56,17 @@ public class TransferData {
                     if (isEnqueue) {
                         MessageToPC messageToPC = (MessageToPC) msg.obj;
                         if (gpsData != null) {
-                            Log.i(TAG, "handleMessage: gpsData="+gpsData.toString());
                             messageToPC.setGps(gpsData);
                             gpsData=null;
-                            GpsData g=messageToPC.getGps();
-                            if(g==null)
-                                Log.i(TAG, "handleMessage: messageToPC.gps is null");
-                            else
-                                Log.i(TAG, "handleMessage: messageToPC.gps ="+g.toString());
-
                         }
 
                         Gson gson = new Gson();
                         String msgJson = gson.toJson(messageToPC);
+                        view.showMessage(msgJson);
+                        view.showState("客户端已连接");
+                    if(LockDataQueue.queue.size()==20){
+                        LockDataQueue.queue.poll();
+                    }
                         LockDataQueue.queue.offer(msgJson);
                     }
                     break;
@@ -81,9 +80,9 @@ public class TransferData {
         return handler;
     }
 
-    public TransferData(Context context, TextView textView) {
+    public TransferData(Context context, viewImpl view) {
         this.context = context;
-        this.textView=textView;
+        this.view=view;
     }
 
     public void start() {
@@ -146,11 +145,10 @@ public class TransferData {
         @Override
         public void onLocationChanged(final HalopayLocation paramYongcheLocation) {
             // TODO Auto-generated method stub
-            Log.i(TAG, "纬度" + paramYongcheLocation.getLatitude());//纬度
-            Log.i(TAG, "经度" + paramYongcheLocation.getLongitude());//经度
-            gpsData = new GpsData(paramYongcheLocation.getLatitude(), paramYongcheLocation.getLongitude());
+            long gpsTimestamp= SystemClock.elapsedRealtimeNanos();
+            Log.i(TAG, "onLocationChanged: gpsTimestamp="+gpsTimestamp);
+            gpsData = new GpsData(gpsTimestamp,paramYongcheLocation.getLatitude(), paramYongcheLocation.getLongitude());
             //transferData.setGps(gpsData);
-            textView.setText("经度：" + paramYongcheLocation.getLongitude() + "\n纬度：" + paramYongcheLocation.getLatitude());
         }
     };
 }
