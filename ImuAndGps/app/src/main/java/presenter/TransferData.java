@@ -17,6 +17,7 @@ import sensor.monitor.gpsSensor.HalopayLocationListener;
 import sensor.monitor.gpsSensor.LocationAPI;
 import thread.LockDataQueue;
 import thread.ServerThread;
+import thread.utils.SocketStatus;
 
 /**
  * @author Created by CM-WANGMIN on 2017/8/18.
@@ -45,14 +46,14 @@ public class TransferData {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
-                case 1001:
+                case SocketStatus.DISCONNECT:
                     isEnqueue = false;
                     view.showState("客户端断开连接");
                     break;
-                case 1002:
+                case SocketStatus.CONNECT:
                     isEnqueue = true;
                     break;
-                case 1003:
+                case SocketStatus.DATA_READY:
                     if (isEnqueue) {
                         MessageToPC messageToPC = (MessageToPC) msg.obj;
                         if (gpsData != null) {

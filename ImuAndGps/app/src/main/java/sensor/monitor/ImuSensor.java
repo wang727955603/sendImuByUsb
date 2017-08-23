@@ -14,6 +14,7 @@ import java.util.TimerTask;
 import sensor.data.ImuData;
 import sensor.data.MessageToPC;
 import thread.utils.Constants;
+import thread.utils.SocketStatus;
 
 /**
  * @author Created by CM-WANGMIN on 2017/8/18.
@@ -88,7 +89,7 @@ public class ImuSensor implements SensorEventListener {
             MessageToPC imu=new MessageToPC(acc,gyr,mag);
             Message msg=new Message();
             msg.obj=imu;
-            msg.what=1003;
+            msg.what= SocketStatus.DATA_READY;
             handler.sendMessage(msg);
         }
     }

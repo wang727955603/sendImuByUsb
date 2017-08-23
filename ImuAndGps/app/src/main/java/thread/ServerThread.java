@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import thread.utils.DataUtils;
+import thread.utils.SocketStatus;
 
 public class ServerThread extends Thread {
     private static final String TAG = "ServerThread";
@@ -24,7 +25,6 @@ public class ServerThread extends Thread {
         this.handler = handler;
         this.port = port;
         isLoop = true;
-        isKeepSending=true;
     }
 
 
@@ -42,8 +42,9 @@ public class ServerThread extends Thread {
             while (isLoop) {
                 Socket socket = serverSocket.accept();
                 Log.i(TAG, "accept  ip=" + socket.getInetAddress());
+                isKeepSending=true;
                 if(handler!=null)
-                    handler.sendEmptyMessage(1002);
+                    handler.sendEmptyMessage(SocketStatus.CONNECT);
                 DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
                 try {
                     while(isKeepSending){
@@ -51,11 +52,10 @@ public class ServerThread extends Thread {
                             String sendData = LockDataQueue.queue.poll();
                             if (!"".equals(sendData) && sendData != null && sendData.length() > 0) {
                                 byte[] bytes = DataUtils.intToMinBytes(sendData.length());
-                                Log.i(TAG, sendData + ",length=" + String.valueOf(bytes.length));
+                                Log.i(TAG, sendData + ",length=" + String.valueOf(sendData.length()));
                                 outputStream.write(bytes);
-                                outputStream.write(sendData.getBytes());
+                                outputStream.write(sendData.getBytes("utf-8"));
                                 outputStream.flush();
-
                             }
                         }
                     }
@@ -64,7 +64,6 @@ public class ServerThread extends Thread {
                 }finally {
                     Log.i(TAG, "run: close soceket");
                     stopSend();
-                    outputStream.close();
                     socket.close();
                 }
             }
@@ -95,7 +94,7 @@ public class ServerThread extends Thread {
     }
     public void stopSend(){
         if(handler!=null)
-            handler.sendEmptyMessage(1001);
+            handler.sendEmptyMessage(SocketStatus.DISCONNECT);
         isKeepSending=false;
         LockDataQueue.queue.clear();
     }
